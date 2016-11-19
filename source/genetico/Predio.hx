@@ -31,4 +31,12 @@ class Predio{
     return Math.sqrt(dx * dx + dy * dy);
   }
 
+  public function setSprite(s:FlxSprite):Void{
+    sprite = s;
+  }
+  
+  public function getSprite():FlxSprite{
+    return sprite;
+  }
+
 }

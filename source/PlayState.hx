@@ -17,9 +17,11 @@ import flixel.util.FlxColor;
 import flixel.text.FlxText;
 
 //generico
+import genetico.AlgoritmoGenetico;
 import genetico.GerentePredio;
 import genetico.Predio;
 import genetico.PredioSprite;
+import genetico.Populacao;
 
 class PlayState extends FlxState
 {
@@ -29,6 +31,12 @@ class PlayState extends FlxState
 	var _predios:FlxTypedGroup<PredioSprite>;
 	var _textos:FlxTypedGroup<FlxText>;
 	var _hud:FlxGroup;
+	var _totalText:FlxText;
+
+
+	//Algoritmo Genetico
+	var populacao:Populacao;
+
 
 	override public function create():Void
 	{
@@ -50,10 +58,19 @@ class PlayState extends FlxState
 		add(_hud);
 
 		//HUD por ultimo
-		var base = new FlxSprite(0,0);
+
+		var base = new FlxSprite(0, 0);
 		base.makeGraphic(FlxG.width, Std.int(FlxG.height/20), FlxColor.WHITE);
 		base.y = FlxG.height - base.height;
+
 		_hud.add(base);
+
+		_totalText = new FlxText(0, 0);
+		_totalText.text = "0";
+		_totalText.y = FlxG.height - base.height;
+		_totalText.setBorderStyle(OUTLINE, FlxColor.RED, 1);
+
+		_hud.add(_totalText);
 
 		//gera 10 predios randomicamente
 		GerentePredio.gerarRandom(10, FlxG.width, Std.int(FlxG.height - base.height) );//para que não aparece ninguem escondino no hud
@@ -92,7 +109,17 @@ class PlayState extends FlxState
 	}
 
 
-	//públic functins
+	//public functins
+
+	public function iniciar():Void{
+		populacao = new Populacao();
+		populacao.iniciar();
+		populacao.gerarRandom(50);
+	}
+
+	public function evoluir():Void{
+		populacao = AlgoritmoGenetico.evoluir(populacao);
+	}
 
 	public function update_text(){
 		trace("atual");
@@ -105,9 +132,11 @@ class PlayState extends FlxState
 			}
 			p.label.text = "" + Std.int(GerentePredio.distancia(id_predio_atual, p.predio_id));
 		});
-
 	}
 
+	public function update_lines(){
+		//atualizar linha conectando os guardas aos predios
 
+	}
 
 }
