@@ -9,6 +9,13 @@ class Populacao{
 
   }
 
+  public function get(i:Int):Individuo{
+    return individuos[i];
+  }
+
+  public function size():Int{
+    return individuos.length;
+  }
   //inicializa o array
   public function iniciar():Void{
     individuos = new Array<Individuo>();
@@ -19,16 +26,17 @@ class Populacao{
     for (i in 0...quantidade){
       var individuo = new Individuo();
       individuo.gerarRandom(quantidadeRecursos);
+      individuos.push(individuo);
     }
   }
 
 
   public function get_fittest():Individuo{
 
-    var indiv:Individuo = individuos[1];
+    var indiv:Individuo = individuos[0];
 
-    for (i in 1...individuos.length){
-      if(indiv.get_fitness() < individuos[1].get_fitness()){
+    for (i in 1...individuos.length){      
+      if(indiv.get_fitness() < individuos[i].get_fitness()){
         indiv = individuos[i];
       }
     }

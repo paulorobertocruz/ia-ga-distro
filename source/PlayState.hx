@@ -7,6 +7,9 @@ import flixel.text.FlxText;
 import flixel.ui.FlxButton;
 import flixel.math.FlxMath;
 
+//
+import flixel.util.FlxSpriteUtil;
+
 //mouse input
 import flixel.input.mouse.FlxMouseEventManager;
 
@@ -22,6 +25,7 @@ import genetico.GerentePredio;
 import genetico.Predio;
 import genetico.PredioSprite;
 import genetico.Populacao;
+import genetico.Individuo;
 
 class PlayState extends FlxState
 {
@@ -32,6 +36,7 @@ class PlayState extends FlxState
 	var _textos:FlxTypedGroup<FlxText>;
 	var _hud:FlxGroup;
 	var _totalText:FlxText;
+	var _lines:FlxSprite;
 
 
 	//Algoritmo Genetico
@@ -59,6 +64,10 @@ class PlayState extends FlxState
 
 		//HUD por ultimo
 
+		//sprite onde serão desenhadas as linhas ligando os recursos aos predios
+		_lines = new FlxSprite(0,0);
+		_lines.makeGraphic(FlxG.width, FlxG.height, FlxColor.TRANSPARENT);
+
 		var base = new FlxSprite(0, 0);
 		base.makeGraphic(FlxG.width, Std.int(FlxG.height/20), FlxColor.WHITE);
 		base.y = FlxG.height - base.height;
@@ -71,9 +80,10 @@ class PlayState extends FlxState
 		_totalText.setBorderStyle(OUTLINE, FlxColor.RED, 1);
 
 		_hud.add(_totalText);
+		_hud.add(_lines);
 
 		//gera 10 predios randomicamente
-		GerentePredio.gerarRandom(10, FlxG.width, Std.int(FlxG.height - base.height) );//para que não aparece ninguem escondino no hud
+		GerentePredio.gerarRandom(40, FlxG.width, Std.int(FlxG.height - base.height) );//para que não aparece ninguem escondino no hud
 
 		for(i in 0...GerentePredio.size()){
 			var p:Predio = GerentePredio.get(i);
@@ -93,6 +103,7 @@ class PlayState extends FlxState
 		}
 
 
+		iniciar();
 
 	}
 
@@ -115,6 +126,12 @@ class PlayState extends FlxState
 		populacao = new Populacao();
 		populacao.iniciar();
 		populacao.gerarRandom(50);
+
+		// trace("distancias:");
+		//
+		// for (i in 0...populacao.size()){
+		// 	trace(populacao.get(i).get_distancia());
+		// }
 	}
 
 	public function evoluir():Void{
@@ -122,21 +139,38 @@ class PlayState extends FlxState
 	}
 
 	public function update_text(){
-		trace("atual");
-		trace(GerentePredio.degub_get_dist_from(id_predio_atual));
+		// trace("atual");
+		// trace(GerentePredio.degub_get_dist_from(id_predio_atual));
 		_predios.forEach( function ( p:PredioSprite ) : Void {
-			if(GerentePredio.distancia(id_predio_atual, p.predio_id) == null){
-				trace("if");
-				trace(id_predio_atual);
-				trace(p.predio_id);
-			}
 			p.label.text = "" + Std.int(GerentePredio.distancia(id_predio_atual, p.predio_id));
 		});
+
+		_totalText.text = "Total melhor distancia:" + populacao.get_fittest().get_distancia();
+
+		//tirar daqui
+		update_lines();
 	}
 
 	public function update_lines(){
 		//atualizar linha conectando os guardas aos predios
+		_lines = new FlxSprite(0, 0);
+		_lines.makeGraphic(FlxG.width, FlxG.height, FlxColor.TRANSPARENT);
+		var fittest:Individuo = populacao.get_fittest();
 
+		var lineStyle:LineStyle = { color: FlxColor.RED, thickness: 1 };
+		var drawStyle:DrawStyle = { smoothing: true };
+
+		for (i in 0...GerentePredio.size()){
+			//desenha linha do predio ate o guarda mais proximo
+			var p_a:Predio = GerentePredio.get(i);
+			var p_b:Predio = fittest.getRecursoMaisProximo(i);
+			if(p_a == p_b){
+				// desenha cubo
+			}else{
+				//desenha linha
+				FlxSpriteUtil.drawLine(_lines, p_a.x, p_a.y, p_b.x, p_b.y, lineStyle);
+			}
+		}
 	}
 
 }

@@ -6,10 +6,10 @@ class Individuo{
   var recursos:Map<Int, Recurso>;
 
   // 1/distancia quanto maior o fitness melhor o Individuo
-  var fitness:Float;
+  var fitness:Float = 0;
 
   //media das distancias dos predios ate o recurso mais proximo
-  var distancia:Float;
+  var distancia:Float = 0;
 
   public function new(){
     recursos = new Map<Int, Recurso>();
@@ -36,6 +36,8 @@ class Individuo{
       posibilidades.remove(pos);
 
     }
+    fitness = 0;
+    distancia = 0;
 
   }
 
@@ -51,6 +53,22 @@ class Individuo{
       }
     }
     return dist;
+  }
+
+  public function getRecursoMaisProximo(id:Int):Predio{
+    var dist:Float = null;
+    var j:Int = -1;
+    for( i in recursos.keys()){
+      if(dist == null){
+        dist = GerentePredio.distancia(id, i);
+        j = i;
+      }
+      else if(dist > GerentePredio.distancia(id, i)){
+        dist = GerentePredio.distancia(id, i);
+        j = i;
+      }
+    }
+    return GerentePredio.get(j);
   }
 
   public function get_distancia():Float{
