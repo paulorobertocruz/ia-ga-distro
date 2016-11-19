@@ -3,10 +3,10 @@ package genetico;
 class Populacao{
 
   var individuos:Array<Individuo>;
-  var quantidadeRecursos:Int  = 3;
+  var quantidadeRecursos:Int;
 
-  public function new(){
-
+  public function new(res:Int = 3){
+    quantidadeRecursos = res;
   }
 
   public function get(i:Int):Individuo{

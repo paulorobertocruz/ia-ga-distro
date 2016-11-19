@@ -29,9 +29,9 @@ class GerentePredio{
 
     init();
 
-    var width:Int = 8;
+    var width:Int = 16;
 
-    var height:Int = 8;
+    var height:Int = 16;
 
     var x:Int;
 
@@ -39,9 +39,9 @@ class GerentePredio{
 
     for (i in 0...quantidade){
 
-      x = Std.int(Math.random() * (max_w - (width+1) ) ) + 1;
+      x = Std.int(Math.random() * (max_w - (width*2) ) ) + width;
 
-      y = Std.int(Math.random() * (max_h - (height+1) ) )  + 1;
+      y = Std.int(Math.random() * (max_h - (height*2) ) )  + height;
 
       var p = new Predio(x, y, width, height);
 

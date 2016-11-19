@@ -43,9 +43,9 @@ class Individuo{
 
 
   private function get_nearest_recurso(id:Int):Float{
-    var dist:Float = null;
+    var dist:Float = -1;
     for( i in recursos.keys()){
-      if(dist == null){
+      if(dist == -1){
         dist = GerentePredio.distancia(id, i);
       }
       else if(dist > GerentePredio.distancia(id, i)){
@@ -55,11 +55,19 @@ class Individuo{
     return dist;
   }
 
+  public function getRecursos():Array<Predio>{
+    var rp:Array<Predio> = [];
+    for (i in recursos.keys()){
+      rp.push(GerentePredio.get(i));
+    }
+    return rp;
+  }
+
   public function getRecursoMaisProximo(id:Int):Predio{
-    var dist:Float = null;
+    var dist:Float = -1;
     var j:Int = -1;
     for( i in recursos.keys()){
-      if(dist == null){
+      if(dist == -1){
         dist = GerentePredio.distancia(id, i);
         j = i;
       }

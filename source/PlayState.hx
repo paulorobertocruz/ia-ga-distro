@@ -31,6 +31,7 @@ class PlayState extends FlxState
 {
 	//public
 	public var id_predio_atual:Int = 0;
+
 	//private
 	var _predios:FlxTypedGroup<PredioSprite>;
 	var _textos:FlxTypedGroup<FlxText>;
@@ -41,6 +42,10 @@ class PlayState extends FlxState
 
 	//Algoritmo Genetico
 	var populacao:Populacao;
+	var quantidadeRecursos:Int = 10;
+	var quantidadeIndividuos:Int = 50;
+
+	var _recursos:FlxTypedGroup<FlxSprite>;
 
 
 	override public function create():Void
@@ -57,8 +62,10 @@ class PlayState extends FlxState
 		_hud = new FlxGroup();
 		_predios = new FlxTypedGroup<PredioSprite>();
 		_textos = new FlxTypedGroup<FlxText>();
+		_recursos = new FlxTypedGroup<FlxSprite>();
 
 		add(_predios);
+		add(_recursos);
 		add(_textos);
 		add(_hud);
 
@@ -90,10 +97,10 @@ class PlayState extends FlxState
 
 			var t:FlxText = new FlxText(p.x, p.y, 50);
 			t.text = "0";
-			t.y -= t.height;
+			t.y -= p.height;
 			t.setBorderStyle(OUTLINE, FlxColor.RED, 1);
 
-			var s = new PredioSprite(p.x, p.y);
+			var s = new PredioSprite(p.x - (p.width/2), p.y - (p.height/2));
 
 			s.predio_id = p.id;
 			s.label = t;
@@ -114,6 +121,9 @@ class PlayState extends FlxState
 			trace("G");
 		}else if(FlxG.keys.anyJustPressed(["F"])){
 			trace("fittest");
+		}else if(FlxG.keys.anyJustPressed(["R"])){
+			//reiniciar;
+			iniciar();
 		}
 		super.update(elapsed);
 
@@ -123,15 +133,30 @@ class PlayState extends FlxState
 	//public functins
 
 	public function iniciar():Void{
-		populacao = new Populacao();
-		populacao.iniciar();
-		populacao.gerarRandom(50);
 
-		// trace("distancias:");
-		//
-		// for (i in 0...populacao.size()){
-		// 	trace(populacao.get(i).get_distancia());
-		// }
+		//remove todos 
+		var diff:Int = _recursos.length - quantidadeRecursos;
+		
+		if(diff > 0 ){
+			for(i in 0...diff){
+				_recursos.members.pop();
+			}
+		}else if(diff < 0){
+			diff *= -1;
+			for(i in 0...diff){
+				var r:FlxSprite = new FlxSprite(0, 0);
+				r.makeGraphic(8, 8, FlxColor.YELLOW);
+				_recursos.add(r);
+			}
+		}		
+		// se for 0 não precisa fazer nada
+		
+		//gera a população inicial
+		populacao = new Populacao(quantidadeRecursos);
+		populacao.iniciar();
+		populacao.gerarRandom(quantidadeIndividuos);
+
+		update_lines_recursos();
 	}
 
 	public function evoluir():Void{
@@ -144,33 +169,45 @@ class PlayState extends FlxState
 		_predios.forEach( function ( p:PredioSprite ) : Void {
 			p.label.text = "" + Std.int(GerentePredio.distancia(id_predio_atual, p.predio_id));
 		});
-
-		_totalText.text = "Total melhor distancia:" + populacao.get_fittest().get_distancia();
-
-		//tirar daqui
-		update_lines();
+		
 	}
 
-	public function update_lines(){
+	public function update_lines_recursos(){
 		//atualizar linha conectando os guardas aos predios
+		_lines.destroy();
 		_lines = new FlxSprite(0, 0);
 		_lines.makeGraphic(FlxG.width, FlxG.height, FlxColor.TRANSPARENT);
+		_hud.add(_lines);		
+
+		//pega o melhor individuo atual
 		var fittest:Individuo = populacao.get_fittest();
 
+		//estilo da linha 
 		var lineStyle:LineStyle = { color: FlxColor.RED, thickness: 1 };
 		var drawStyle:DrawStyle = { smoothing: true };
 
+		//desenha as linhas
 		for (i in 0...GerentePredio.size()){
 			//desenha linha do predio ate o guarda mais proximo
 			var p_a:Predio = GerentePredio.get(i);
 			var p_b:Predio = fittest.getRecursoMaisProximo(i);
-			if(p_a == p_b){
-				// desenha cubo
-			}else{
+			if(p_a != p_b){			
 				//desenha linha
 				FlxSpriteUtil.drawLine(_lines, p_a.x, p_a.y, p_b.x, p_b.y, lineStyle);
 			}
 		}
+
+		//muda os recursos para os locais certos
+		var res:Array<Predio> = fittest.getRecursos();
+
+		for(i in 0...quantidadeRecursos){			
+			_recursos.members[i].x = res[i].x - (_recursos.members[i].width/2);
+			_recursos.members[i].y = res[i].y - (_recursos.members[i].height/2);
+		}
+
+		//atualiza melhor distancia
+		_totalText.text = "Total melhor distancia:" + populacao.get_fittest().get_distancia();
+
 	}
 
 }
