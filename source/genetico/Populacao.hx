@@ -13,6 +13,10 @@ class Populacao{
     return individuos[i];
   }
 
+  public function add(i:Individuo):Void{
+    individuos.push(i);
+  }
+
   public function size():Int{
     return individuos.length;
   }
