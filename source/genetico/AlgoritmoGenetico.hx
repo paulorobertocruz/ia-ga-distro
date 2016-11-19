@@ -1,0 +1,5 @@
+package genetico;
+
+class AlgoritmoGenetico{
+  
+}
