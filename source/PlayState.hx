@@ -127,7 +127,6 @@ class PlayState extends FlxState
 			iniciar();
 		}else if(FlxG.keys.anyJustPressed(["E"])){
 			//evoluir;
-			trace("evoluir");
 			evoluir();
 			update_lines_recursos();
 		}
@@ -179,8 +178,6 @@ class PlayState extends FlxState
 
 	//atualizar linha conectando os guardas aos predios
 	public function update_lines_recursos(){
-		
-		trace("update_lines");
 
 		_lines.destroy();
 		_lines = new FlxSprite(0, 0);
