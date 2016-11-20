@@ -44,6 +44,7 @@ class PlayState extends FlxState
 	var populacao:Populacao;
 	var quantidadeRecursos:Int = 10;
 	var quantidadeIndividuos:Int = 50;
+	var quantidadePredios:Int = 40;
 
 	var _recursos:FlxTypedGroup<FlxSprite>;
 
@@ -67,32 +68,32 @@ class PlayState extends FlxState
 		add(_predios);
 		add(_recursos);
 		add(_textos);
+
+		//HUD por ultimo, trocar por substate para o hud acompanhar a camera
 		add(_hud);
-
-		//HUD por ultimo
-
-		//sprite onde serão desenhadas as linhas ligando os recursos aos predios
-		_lines = new FlxSprite(0,0);
-		_lines.makeGraphic(FlxG.width, FlxG.height, FlxColor.TRANSPARENT);
 
 		var base = new FlxSprite(0, 0);
 		base.makeGraphic(FlxG.width, Std.int(FlxG.height/20), FlxColor.WHITE);
 		base.y = FlxG.height - base.height;
-
 		_hud.add(base);
 
 		_totalText = new FlxText(0, 0);
 		_totalText.text = "0";
 		_totalText.y = FlxG.height - base.height;
 		_totalText.setBorderStyle(OUTLINE, FlxColor.RED, 1);
-
 		_hud.add(_totalText);
+
+		//sprite onde serão desenhadas as linhas ligando os recursos aos predios
+		_lines = new FlxSprite(0,0);
+		_lines.makeGraphic(FlxG.width, FlxG.height, FlxColor.TRANSPARENT);
 		_hud.add(_lines);
 
 		//gera 10 predios randomicamente
-		GerentePredio.gerarRandom(40, FlxG.width, Std.int(FlxG.height - base.height) );//para que não aparece ninguem escondino no hud
+		GerentePredio.gerarRandom(quantidadePredios, FlxG.width, Std.int(FlxG.height - base.height) );//para que não aparece ninguem escondino no hud
 
+		//coloca os sprites dos predios nos locais corretos
 		for(i in 0...GerentePredio.size()){
+
 			var p:Predio = GerentePredio.get(i);
 
 			var t:FlxText = new FlxText(p.x, p.y, 50);
@@ -124,17 +125,20 @@ class PlayState extends FlxState
 		}else if(FlxG.keys.anyJustPressed(["R"])){
 			//reiniciar;
 			iniciar();
+		}else if(FlxG.keys.anyJustPressed(["E"])){
+			//evoluir;
+			trace("evoluir");
+			evoluir();
+			update_lines_recursos();
 		}
 		super.update(elapsed);
 
 	}
 
-
-	//public functins
-
 	public function iniciar():Void{
 
-		//remove todos 
+		//deixa na tela a quantidade certa de sprites de _recursos
+		// se não tiver nenhum adiciona
 		var diff:Int = _recursos.length - quantidadeRecursos;
 		
 		if(diff > 0 ){
@@ -144,36 +148,40 @@ class PlayState extends FlxState
 		}else if(diff < 0){
 			diff *= -1;
 			for(i in 0...diff){
-				var r:FlxSprite = new FlxSprite(0, 0);
+				//posiciona novos recursos fora da tela
+				var r:FlxSprite = new FlxSprite(-10, -10);
 				r.makeGraphic(8, 8, FlxColor.YELLOW);
 				_recursos.add(r);
 			}
 		}		
-		// se for 0 não precisa fazer nada
+		// se for 0 não precisa fazer nada porque
+		// ja tem a quantidade certa de recursos na tela
 		
-		//gera a população inicial
-		populacao = new Populacao(quantidadeRecursos);
-		populacao.iniciar();
+		//gera a população inicial randomica
+		populacao = new Populacao(quantidadeRecursos);		
 		populacao.gerarRandom(quantidadeIndividuos);
 
+		//desenha as rotas dos predios ate o guarda mais proximo
 		update_lines_recursos();
 	}
 
+	//chama a evolução do algoritmo genetico
 	public function evoluir():Void{
-		populacao = AlgoritmoGenetico.evoluir(populacao);
+		populacao = AlgoritmoGenetico.evoluir(populacao);		
 	}
 
-	public function update_text(){
-		// trace("atual");
-		// trace(GerentePredio.degub_get_dist_from(id_predio_atual));
+	//atualiza os texto de distancia quanto é clicado em um determinado predio
+	public function update_text(){		
 		_predios.forEach( function ( p:PredioSprite ) : Void {
 			p.label.text = "" + Std.int(GerentePredio.distancia(id_predio_atual, p.predio_id));
-		});
-		
+		});		
 	}
 
+	//atualizar linha conectando os guardas aos predios
 	public function update_lines_recursos(){
-		//atualizar linha conectando os guardas aos predios
+		
+		trace("update_lines");
+
 		_lines.destroy();
 		_lines = new FlxSprite(0, 0);
 		_lines.makeGraphic(FlxG.width, FlxG.height, FlxColor.TRANSPARENT);
@@ -181,6 +189,7 @@ class PlayState extends FlxState
 
 		//pega o melhor individuo atual
 		var fittest:Individuo = populacao.get_fittest();
+		
 
 		//estilo da linha 
 		var lineStyle:LineStyle = { color: FlxColor.RED, thickness: 1 };
@@ -199,10 +208,10 @@ class PlayState extends FlxState
 
 		//muda os recursos para os locais certos
 		var res:Array<Predio> = fittest.getRecursos();
-
-		for(i in 0...quantidadeRecursos){			
+		trace("quantidade:"+res.length);
+		for(i in 0...quantidadeRecursos){
 			_recursos.members[i].x = res[i].x - (_recursos.members[i].width/2);
-			_recursos.members[i].y = res[i].y - (_recursos.members[i].height/2);
+			_recursos.members[i].y = res[i].y - (_recursos.members[i].height/2);			
 		}
 
 		//atualiza melhor distancia
