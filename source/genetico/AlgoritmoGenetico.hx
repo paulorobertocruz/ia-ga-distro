@@ -13,11 +13,9 @@ class AlgoritmoGenetico{
     static public function evoluir(pop:Populacao):Populacao{
       
       quantidadeDeRecursos = pop.getQuantidadeRecursos();
-      
-      trace("evolução");
 
       var novaPop:Populacao = new Populacao(pop.getQuantidadeRecursos());
-      
+
       novaPop.iniciar();
       
       var offset:Int = 0;
@@ -45,20 +43,19 @@ class AlgoritmoGenetico{
     }
 
     static public function cruzar(p:Individuo, m:Individuo):Individuo{
-      
+
       var filho:Individuo = new Individuo();
       
       var quantidadePai:Int;
       var quantidadeMae:Int; 
 
       var rp:Array<Predio> = p.getRecursos();
-      var rm:Array<Predio> = m.getRecursos();
-      
+      var rm:Array<Predio> = m.getRecursos();      
       trace("pai:"+rp.length +" mae:"+ rm.length);
 
       quantidadePai = Math.ceil(rp.length/2);
       quantidadeMae = Math.floor(rm.length/2);
-
+      
       //pai 
       for(i in 0...quantidadePai){
         var index:Int = Std.int( Math.random() * rp.length );
@@ -72,10 +69,9 @@ class AlgoritmoGenetico{
         var ok:Bool = false;
         var index:Int = -1;
         //certifica que não vai sobreescrever um recurso ja existente no filho
-        while( ok == false){
-          trace("tentativa_"+i);
+        while( ok == false){          
           index = Std.int( Math.random() * rm.length );
-          if (filho.contemRecurso(index)  == false){
+          if (filho.contemRecurso(rm[index].id)  == false){
             ok = true;
           }
         }
