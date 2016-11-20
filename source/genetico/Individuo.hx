@@ -15,6 +15,14 @@ class Individuo{
     recursos = new Map<Int, Recurso>();
   }
 
+  public function setRecurso(predio_id:Int, r:Recurso):Void{
+    recursos[predio_id] = r;
+  }
+
+  public function contemRecurso(predio_id):Bool{
+    return recursos.exists(predio_id);
+  }
+
   public function gerarRandom(quantidade:Int):Void{
 
     recursos = new Map<Int, Recurso>();
