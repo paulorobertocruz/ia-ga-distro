@@ -38,13 +38,20 @@ class PlayState extends FlxState
 	var _hud:FlxGroup;
 	var _totalText:FlxText;
 	var _lines:FlxSprite;
+	var _btns:FlxTypedGroup<FlxButton>;
 
+	//controle
+	var _play:Bool = false;
+	var _geracao:Int = 1;
+
+	var _btnPlay:FlxButton;
+	var _btnEvoluir:FlxButton;
 
 	//Algoritmo Genetico
 	var populacao:Populacao;
 	var quantidadeRecursos:Int = 10;
 	var quantidadeIndividuos:Int = 50;
-	var quantidadePredios:Int = 40;
+	var quantidadePredios:Int = 50;
 
 	var _recursos:FlxTypedGroup<FlxSprite>;
 
@@ -64,6 +71,7 @@ class PlayState extends FlxState
 		_predios = new FlxTypedGroup<PredioSprite>();
 		_textos = new FlxTypedGroup<FlxText>();
 		_recursos = new FlxTypedGroup<FlxSprite>();
+		_btns = new FlxTypedGroup<FlxButton>();
 
 		add(_predios);
 		add(_recursos);
@@ -72,8 +80,39 @@ class PlayState extends FlxState
 		//HUD por ultimo, trocar por substate para o hud acompanhar a camera
 		add(_hud);
 
+
+		//btns
+		add(_btns);
+		var heightBtn:Int = FlxG.height - Std.int(FlxG.height/20) - 5;
+		var _btnResetar = new FlxButton(400, heightBtn, "Reiniciar", function() : Void {
+			_geracao = 1;
+			_play = false;
+			_btnPlay.text = "play";
+			iniciar();
+		});
+
+		_btnPlay = new FlxButton(_btnResetar.x + _btnResetar.width, heightBtn, "play", function(){
+			if(_play){
+				_play = false;
+				this._btnPlay.text = "play";
+			}
+			else{
+				_play = true;
+				this._btnPlay.text = "pause";
+			}
+		});
+
+		_btnEvoluir  = new FlxButton(_btnPlay.width + _btnPlay.x, heightBtn, ">>", function(){
+			_geracao += 1;
+			evoluir();
+			update_lines_recursos();
+		});
+		_btns.add(_btnResetar);
+		_btns.add(_btnPlay);
+		_btns.add(_btnEvoluir);
+
 		var base = new FlxSprite(0, 0);
-		base.makeGraphic(FlxG.width, Std.int(FlxG.height/20), FlxColor.WHITE);
+		base.makeGraphic(FlxG.width, Std.int(FlxG.height/20), FlxColor.YELLOW);
 		base.y = FlxG.height - base.height;
 		_hud.add(base);
 
@@ -117,17 +156,10 @@ class PlayState extends FlxState
 
 	override public function update(elapsed:Float):Void
 	{
-
-		if(FlxG.keys.anyJustPressed(["G"])){
-			trace("G");
-		}else if(FlxG.keys.anyJustPressed(["F"])){
-			trace("fittest");
-		}else if(FlxG.keys.anyJustPressed(["R"])){
-			//reiniciar;
-			iniciar();
-		}else if(FlxG.keys.anyJustPressed(["E"])){
-			//evoluir;
-			evoluir();
+		if(_play)
+		{
+			_geracao += 1;
+			populacao = AlgoritmoGenetico.evoluir(populacao);
 			update_lines_recursos();
 		}
 		super.update(elapsed);
@@ -139,7 +171,7 @@ class PlayState extends FlxState
 		//deixa na tela a quantidade certa de sprites de _recursos
 		// se não tiver nenhum adiciona
 		var diff:Int = _recursos.length - quantidadeRecursos;
-		
+
 		if(diff > 0 ){
 			for(i in 0...diff){
 				_recursos.members.pop();
@@ -152,12 +184,12 @@ class PlayState extends FlxState
 				r.makeGraphic(8, 8, FlxColor.YELLOW);
 				_recursos.add(r);
 			}
-		}		
+		}
 		// se for 0 não precisa fazer nada porque
 		// ja tem a quantidade certa de recursos na tela
-		
+
 		//gera a população inicial randomica
-		populacao = new Populacao(quantidadeRecursos);		
+		populacao = new Populacao(quantidadeRecursos);
 		populacao.gerarRandom(quantidadeIndividuos);
 
 		//desenha as rotas dos predios ate o guarda mais proximo
@@ -166,14 +198,14 @@ class PlayState extends FlxState
 
 	//chama a evolução do algoritmo genetico
 	public function evoluir():Void{
-		populacao = AlgoritmoGenetico.evoluir(populacao);		
+		populacao = AlgoritmoGenetico.evoluir(populacao);
 	}
 
 	//atualiza os texto de distancia quanto é clicado em um determinado predio
-	public function update_text(){		
+	public function update_text(){
 		_predios.forEach( function ( p:PredioSprite ) : Void {
 			p.label.text = "" + Std.int(GerentePredio.distancia(id_predio_atual, p.predio_id));
-		});		
+		});
 	}
 
 	//atualizar linha conectando os guardas aos predios
@@ -182,13 +214,13 @@ class PlayState extends FlxState
 		_lines.destroy();
 		_lines = new FlxSprite(0, 0);
 		_lines.makeGraphic(FlxG.width, FlxG.height, FlxColor.TRANSPARENT);
-		_hud.add(_lines);		
+		_hud.add(_lines);
 
 		//pega o melhor individuo atual
 		var fittest:Individuo = populacao.get_fittest();
-		
 
-		//estilo da linha 
+
+		//estilo da linha
 		var lineStyle:LineStyle = { color: FlxColor.RED, thickness: 1 };
 		var drawStyle:DrawStyle = { smoothing: true };
 
@@ -197,7 +229,7 @@ class PlayState extends FlxState
 			//desenha linha do predio ate o guarda mais proximo
 			var p_a:Predio = GerentePredio.get(i);
 			var p_b:Predio = fittest.getRecursoMaisProximo(i);
-			if(p_a != p_b){			
+			if(p_a != p_b){
 				//desenha linha
 				FlxSpriteUtil.drawLine(_lines, p_a.x, p_a.y, p_b.x, p_b.y, lineStyle);
 			}
@@ -208,11 +240,11 @@ class PlayState extends FlxState
 		trace("quantidade:"+res.length);
 		for(i in 0...quantidadeRecursos){
 			_recursos.members[i].x = res[i].x - (_recursos.members[i].width/2);
-			_recursos.members[i].y = res[i].y - (_recursos.members[i].height/2);			
+			_recursos.members[i].y = res[i].y - (_recursos.members[i].height/2);
 		}
 
 		//atualiza melhor distancia
-		_totalText.text = "Total melhor distancia:" + populacao.get_fittest().get_distancia();
+		_totalText.text = "DISTANCIA MEDIA:" + populacao.get_fittest().get_distancia() + " GERAÇÃO: "+ _geracao;
 
 	}
 
