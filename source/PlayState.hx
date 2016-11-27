@@ -228,7 +228,7 @@ class PlayState extends FlxState
 		for (i in 0...GerentePredio.size()){
 			//desenha linha do predio ate o guarda mais proximo
 			var p_a:Predio = GerentePredio.get(i);
-			var p_b:Predio = fittest.getRecursoMaisProximo(i);
+			var p_b:Predio = fittest.getRecursoProximo(i);
 			if(p_a != p_b){
 				//desenha linha
 				FlxSpriteUtil.drawLine(_lines, p_a.x, p_a.y, p_b.x, p_b.y, lineStyle);

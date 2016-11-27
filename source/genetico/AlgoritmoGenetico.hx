@@ -4,7 +4,7 @@ class AlgoritmoGenetico{
 
     static var quantidadeDeRecursos:Int;
 
-    static var taxaMutacao:Float = 0.035;
+    static var taxaMutacao:Float = 0.7654335;
 
     static var tamanho_amostra_rota:Int = 10;
 
@@ -42,7 +42,8 @@ class AlgoritmoGenetico{
       return novaPop;
     }
 
-    static public function cruzar(p:Individuo, m:Individuo):Individuo{
+    static public function cruzar(p:Individuo, m:Individuo):Individuo
+    {
 
       var filho:Individuo = new Individuo();
       
@@ -50,14 +51,14 @@ class AlgoritmoGenetico{
       var quantidadeMae:Int; 
 
       var rp:Array<Predio> = p.getRecursos();
-      var rm:Array<Predio> = m.getRecursos();      
-      trace("pai:"+rp.length +" mae:"+ rm.length);
+      var rm:Array<Predio> = m.getRecursos();
 
       quantidadePai = Math.ceil(rp.length/2);
       quantidadeMae = Math.floor(rm.length/2);
       
       //pai 
-      for(i in 0...quantidadePai){
+      for(i in 0...quantidadePai)
+      {
         var index:Int = Std.int( Math.random() * rp.length );
         var predio:Predio = rp[index];
         filho.setRecurso(predio.id, new Recurso());
@@ -65,13 +66,16 @@ class AlgoritmoGenetico{
       }
 
       //mae
-      for(i in 0...quantidadeMae){        
+      for(i in 0...quantidadeMae)
+      {
         var ok:Bool = false;
         var index:Int = -1;
         //certifica que não vai sobreescrever um recurso ja existente no filho
-        while( ok == false){          
+        while( ok == false)
+        {
           index = Std.int( Math.random() * rm.length );
-          if (filho.contemRecurso(rm[index].id)  == false){
+          if (filho.contemRecurso(rm[index].id)  == false)
+          {
             ok = true;
           }
         }
@@ -84,16 +88,29 @@ class AlgoritmoGenetico{
       return filho;
     }
 
-    static public function mutacao(i:Individuo):Individuo{
-      return i;
+    static public function mutacao(ind:Individuo):Individuo
+    {
+        var recursos:Array<Predio> = ind.getRecursos();
+
+        for (i in 0...recursos.length)
+        {
+            if( Math.random() <= taxaMutacao)
+            {
+                ind.shiftRecurso(recursos[i].id);
+            }
+
+        }
+        return ind;
     }
 
-    static private function seleciona(pop:Populacao):Individuo {
+    static private function seleciona(pop:Populacao):Individuo
+    {
 
         var sl_pop:Populacao = new Populacao();
         sl_pop.iniciar();
 
-        for (i in 0...tamanho_amostra_rota) {
+        for (i in 0...tamanho_amostra_rota)
+        {
             //não deixar repetir? usar outro array para retirar possibilidades 
 
             var randomId:Int = Std.int(Math.random() * pop.size());
